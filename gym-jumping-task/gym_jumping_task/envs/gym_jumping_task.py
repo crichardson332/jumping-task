@@ -289,7 +289,12 @@ class JumpTaskEnv(gym.Env):
     elif exited:
       reward += self.rewards['exit']
     self.step_id += 1
-    return self.get_state(), reward, self.done, {}
+
+    # put distance to obstacle into info
+    dist = self.obstacle_position - self.agent_pos_x
+    info = {'dist_to_obstacle': dist}
+
+    return self.get_state(), reward, self.done, info
 
   def render(self):
     ''' Render the screen game using pygame.
@@ -327,6 +332,9 @@ class JumpTaskEnv(gym.Env):
     pygame.draw.rect(self.screen, RGB_GREY, obstacle)
 
     pygame.display.flip()
+
+    # FIXME
+    pygame.image.save(self.screen, "test_screenshot.png")
 
 def test(args):
   env = JumpTaskEnv(scr_w=args.scr_w, scr_h=args.scr_h, floor_height=args.floor_height,
@@ -388,7 +396,7 @@ if __name__ == '__main__':
                       help='agent lateral speed, measured in pixels per time step, by default 1 pixel')
   parser.add_argument('--obstacle_position', type=int, default=LEFT,
                       help='initial x position of the obstacle (on the floor), by default 0 pixels, which is the leftmost one')
-  parser.add_argument('--obstacle_size', type=int, default=(9,10),
+  parser.add_argument('--obstacle_size', type=int, default=(9,10), nargs="+",
                       help='width and height of the obstacle, by default(9, 10)')
   parser.add_argument('--zoom', type=int, default=8,
                       help='zoom applied to the screen when rendering, by default 8')
